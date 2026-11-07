@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP N° 8: Sistemas de Archivos — TSO UNJu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['selector', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header Fijo con Glassmorphism -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="branding">
+                <span class="badge badge-info mb-1">UNJu — Facultad de Ingeniería | Ciclo Lectivo 2026</span>
+                <h1>📁 TP N° 8: Sistemas de Archivos y Entrada/Salida</h1>
+                <p>Teoría de Sistemas Operativos — Cátedra: Ing. María Fernanda Vázquez | JTP: Ing. Fabio D. Argañaraz</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btn-theme-toggle" class="btn-glass" title="Alternar Modo Oscuro/Claro">🌓</button>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <span id="progress-text">Progreso: 0 / 20 (0%)</span>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Tarjeta de Identificación del Estudiante -->
+        <section class="card student-info">
+            <h2><span aria-hidden="true">👤</span> Datos del estudiante</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                <div class="input-group">
+                    <label for="student-name">Apellido y Nombre (Obligatorio):</label>
+                    <input type="text" id="student-name" placeholder="Ej: Perez, Juan Manuel" required>
+                </div>
+                <div class="input-group">
+                    <label for="student-id">Legajo Estudiantil (Obligatorio):</label>
+                    <input type="text" id="student-id" placeholder="Ej: 12345" required>
+                </div>
+                <div class="input-group">
+                    <label for="student-email">Correo Electrónico Institucional (Opcional):</label>
+                    <input type="email" id="student-email" placeholder="alumno@fi.unju.edu.ar">
+                </div>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-2">El legajo estudiantil es el identificador académico para la acreditación en la cátedra; el correo electrónico es opcional.</p>
+        </section>
+
+        <!-- Consigna General y Alcance -->
+        <section class="card">
+            <h2><span aria-hidden="true">📋</span> Consigna General, Modalidad de Trabajo y Política de Evaluación</h2>
+            <div class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed space-y-3 mt-2">
+                <p><strong>Objetivo Académico:</strong> Comprender, analizar y simular interactivamente los mecanismos esenciales de almacenamiento secundario y subsistemas de Entrada/Salida en los Sistemas Operativos: métodos de asignación de bloques en disco (Contigua, Enlazada y FAT en memoria principal), cálculo analítico de capacidad y accesos en <strong>Nodos-i UNIX</strong>, administración del espacio libre mediante <strong>mapas de bits</strong> y listas ligadas, auditoría y diagnóstico de consistencia de disco (estados canónicos y bloques defectuosos), modelos de protección por clases de usuario (dueño, grupo y otros), control de cuotas de almacenamiento (proporción máxima garantizada por el SO), operación de apertura y tabla en memoria principal, políticas de planificación de cabezas de disco (<strong>FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK y SCAN de N pasos</strong>) y técnicas de comunicación de E/S (<strong>Polling, Interrupciones y DMA</strong>).</p>
+                <p><strong>Alcance Temático:</strong> La evaluación calificable está basada estrictamente en los contenidos oficiales de las Unidades 8 y 9. La aplicación incorpora algunas ampliaciones didácticas opcionales, expresamente identificadas y no necesarias para resolver los ejercicios.</p>
+
+                <!-- Recorrido Guiado Obligatorio por Laboratorios -->
+                <div class="p-3 bg-blue-50/70 dark:bg-slate-900/80 rounded-lg border border-blue-200 dark:border-blue-900 space-y-1.5">
+                    <span class="font-bold text-blue-800 dark:text-blue-300 block">🗺️ Recorrido Práctico Guiado Obligatorio (Laboratorios 1 a 6):</span>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300">
+                        <li><strong>Lab 1 (Asignación):</strong> Cree Archivo A (3 blk), B (4 blk) y C (2 blk); elimine A; intente extender B (+3 blk); registre cómo el Archivo C en el bloque 7 bloquea el crecimiento contiguo de B evidenciando la fragmentación externa.</li>
+                        <li><strong>Lab 2 (Nodos-i):</strong> Ingrese sucesivamente los bloques lógicos 5 (directo), 150 (simple indirecto) y 300 (doble indirecto); registre y compare el número de lecturas físicas a disco requeridas.</li>
+                        <li><strong>Lab 3 (Espacio Libre):</strong> Verifique el cálculo de memoria para un volumen de 32 GiB con bloques de 4 KiB aplicando la fórmula oficial (Diapositiva 40) y analice la condición de uso del mapa de bits frente a listas ligadas (Diapositiva 40).</li>
+                        <li><strong>Lab 4 (Consistencia y Diagnóstico):</strong> Audite los escenarios de bloque perdido, duplicado y defectuoso (Diapositiva 44); confirme el aislamiento por software en la lista de defectuosos y compare con los bloques de reserva por hardware (Diapositivas 46-47).</li>
+                        <li><strong>Lab 5 (Protección y Cuotas):</strong> Compruebe el modelo de control de acceso para dueño, grupo y otros; experimente con el simulador de cuotas cómo el sistema operativo garantiza que no se exceda la cuota máxima asignada por el administrador (Diapositiva 43).</li>
+                        <li><strong>Lab 6 (E/S y Discos):</strong> Ejecute los algoritmos de planificación incluyendo SCAN de N pasos con la cola oficial <code>55, 58, 39, 18, 90, 160, 150, 38, 184</code> desde la pista 100; contraste la varianza de C-SCAN frente a la inanición de SSTF y utilice la calculadora de <em>T</em> = <em>b</em> / (<em>r</em> &middot; <em>N</em>).</li>
+                    </ul>
+                </div>
+
+                <!-- Síntesis Conceptual de Contenidos Complementarios -->
+                <div class="p-3 bg-purple-50/70 dark:bg-slate-900/80 rounded-lg border border-purple-200 dark:border-purple-900 space-y-1">
+                    <span class="font-bold text-purple-800 dark:text-purple-300 block">📚 Fundamentos Conceptuales Clave (Teoría Oficial):</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-gray-600 dark:text-gray-300">
+                        <div>
+                            • <strong>Concepto y Abstracción de Archivo:</strong> Unidad lógica de almacenamiento y colección de información relacionada con nombre propio grabada en memoria secundaria; para el SO es una secuencia de bytes (Diapos 3-4).<br>
+                            • <strong>Rutas de Acceso:</strong> La ruta absoluta consta de la ruta desde el directorio raíz hasta el archivo separando sus componentes con un carácter <em>"separador"</em>, mientras que la ruta relativa se toma en relación con el directorio de trabajo o activo (Diapo 9).
+                        </div>
+                        <div>
+                            • <strong>Organizaciones de Archivos:</strong> La pila o apilado (registros y campos variables en orden cronológico), Secuencial (longitud fija ordenado por campo clave), Secuencial Indexado (índice + archivo principal + desbordamiento), Indexado (múltiples índices exhaustivos/parciales) y Directo o Hash (Diapos 14-17).<br>
+                            • <strong>SCAN de N Pasos:</strong> Divide la cola de peticiones en subcolas de longitud <em>N</em> procesadas mediante SCAN; para <em>N</em> grande se aproxima a SCAN y para <em>N</em> = 1 adopta la política FIFO (Diapo 74).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Microactividad Didáctica 1: Clasificador de Rutas -->
+                <div class="p-3 bg-amber-50/70 dark:bg-amber-950/40 rounded-lg border border-amber-300 dark:border-amber-800 space-y-2">
+                    <span class="font-bold text-amber-900 dark:text-amber-200 block text-xs">🧪 Microactividad Didáctica: Clasificador de Rutas (Diapositiva 9)</span>
+                    <p class="text-[11px] text-gray-700 dark:text-gray-300">Determina si la ruta mostrada es absoluta (desde el directorio raíz usando un carácter separador) o relativa (en relación con el directorio de trabajo o activo):</p>
+                    <div class="flex items-center gap-3">
+                        <code id="micro-route-path" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-700 rounded font-mono text-xs text-blue-700 dark:text-blue-300 font-bold">/home/alumno/tso/trabajo.txt</code>
+                        <div class="flex gap-1.5">
+                            <button type="button" id="btn-route-abs" class="px-2 py-1 text-[11px] font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded">Ruta Absoluta</button>
+                            <button type="button" id="btn-route-rel" class="px-2 py-1 text-[11px] font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded">Ruta Relativa</button>
+                            <button type="button" id="btn-route-next" class="px-2 py-1 text-[11px] font-semibold bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-gray-200 rounded">Siguiente ↻</button>
+                        </div>
+                    </div>
+                    <div id="micro-route-feedback" class="hidden text-xs" aria-live="polite"></div>
+                </div>
+
+                <!-- Política de Evaluación -->
+                <div class="p-2.5 bg-emerald-50/70 dark:bg-slate-900/80 rounded-lg border border-emerald-200 dark:border-emerald-900 text-[11px] space-y-1">
+                    <span class="font-bold text-emerald-800 dark:text-emerald-300 block">⚖️ Política de Evaluación y Calificación Académica:</span>
+                    <p>• <strong>Modalidad:</strong> Autoevaluación interactiva y entrega formativa calificable con acreditación de datos estudiantiles.</p>
+                    <p>• <strong>Puntaje:</strong> 20 ejercicios de 5 puntos cada uno (Puntaje Máximo: 100 puntos / Calificación 10.0).</p>
+                    <p>• <strong>Criterio de Aprobación:</strong> Mínimo <strong>60 puntos</strong> (calificación &ge; 6.0 / 10.0).</p>
+                    <p>• <strong>Intentos y Retroalimentación:</strong> Intentos ilimitados. La retroalimentación y calificación se obtienen mediante el autograder al exportar y validar la entrega.</p>
+                    <p>• <strong>Entrega Oficial:</strong> Al responder las consignas, exporta el archivo <code>respuestas_tp8.json</code> con tus datos completos. Este archivo puede validarse localmente o en el servidor docente ejecutando el script oficial <code>python autograder_tp8.py</code> suministrado en el repositorio.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 1: MÉTODOS DE ASIGNACIÓN -->
+        <section class="card" id="lab1-allocation">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2><span aria-hidden="true">🗄️</span> Laboratorio 1: Métodos de Asignación en Disco (Contigua, Enlazada y FAT)</h2>
+                <span class="badge badge-info" id="badge-alloc-method">Método: Asignación Contigua</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">
+                Experimenta cómo se organizan los bloques de datos de los archivos en el almacenamiento secundario. Observa la dispersión de huecos libres, el costo de las búsquedas secuenciales vs directas y el papel de la memoria caché.
+            </p>
+
+            <div class="simulator-controls mb-4">
+                <div class="flex items-center gap-2">
+                    <label for="select-alloc-method" class="text-xs font-bold">Estrategia:</label>
+                    <select id="select-alloc-method" class="text-xs py-1.5 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800 font-semibold">
+                        <option value="contigua">Asignación Contigua (Adyacente)</option>
+                        <option value="enlazada">Asignación Enlazada (Linked List en disco)</option>
+                        <option value="fat">Tabla FAT (Punteros centralizados en Memoria Principal)</option>
+                    </select>
+                </div>
+
+                <button id="btn-create-file-a" class="btn-primary text-xs font-bold">📄 Crear Archivo A (3 blk)</button>
+                <button id="btn-create-file-b" class="btn-primary text-xs font-bold">📄 Crear Archivo B (4 blk)</button>
+                <button id="btn-create-file-c" class="btn-primary text-xs font-bold">📄 Crear Archivo C (2 blk)</button>
+                <button id="btn-delete-file-a" class="btn-secondary text-xs font-bold">🗑️ Eliminar Archivo A (Genera Hueco)</button>
+                <button id="btn-extend-file-b" class="btn-secondary text-xs font-bold">➕ Extender Archivo B (+3 blk)</button>
+                <button id="btn-reset-disk" class="btn-secondary text-xs font-bold">🔄 Limpiar Disco</button>
+            </div>
+
+            <div id="alloc-feedback-msg" class="mb-3 text-xs font-semibold p-2 rounded hidden" aria-live="polite"></div>
+
+            <!-- Visualizador de bloques en disco (64 bloques) -->
+            <div class="mb-3">
+                <div class="flex justify-between items-center text-xs font-bold mb-1">
+                    <span>Espacio Físico del Disco (64 bloques de 1 KiB):</span>
+                    <span id="disk-stats" class="text-blue-600 dark:text-blue-400">Ocupados: 0/64 | Libres: 64 | Índice Didáctico de Dispersión del Espacio Libre: 0%</span>
+                </div>
+                <div id="disk-grid-container" class="disk-grid">
+                    <!-- Generado dinámicamente por app.js -->
+                </div>
+            </div>
+
+            <!-- Visualizador de la Tabla FAT (en Memoria RAM) -->
+            <div id="fat-table-container" class="mb-3 p-3 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-slate-900/40 text-xs hidden">
+                <div class="font-bold text-emerald-700 dark:text-emerald-300 mb-1 flex items-center justify-between">
+                    <span><span aria-hidden="true">💾</span> Tabla de Asignación de Archivos (FAT — Modelo oficial de cátedra: residente en memoria principal):</span>
+                    <span class="text-[11px] font-normal text-gray-500">Recorrido de punteros en memoria principal (sin operaciones de E/S de disco para encadenamiento)</span>
+                </div>
+                <div id="fat-entries-grid" class="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-16 gap-1 font-mono text-[10px] text-center max-h-32 overflow-y-auto p-1.5 bg-white/80 dark:bg-slate-800 rounded border border-emerald-200 dark:border-emerald-900">
+                    <!-- Entradas FAT generadas dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Panel informativo de la estrategia seleccionada -->
+            <div id="alloc-info-card" class="p-3 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-slate-800/50 text-xs space-y-1">
+                <!-- Actualizado por JS -->
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicio 1 (Contigua)</strong>, <strong>Ejercicio 2 (Enlazada)</strong> y <strong>Ejercicio 3 (FAT)</strong>.</span>
+                <a href="#card-ej1_asignacion_contigua" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 1-3 ↓</a>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 2: INODO UNIX Y CÁLCULO DE CAPACIDAD -->
+        <section class="card" id="lab2-inode">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2><span aria-hidden="true">🌲</span> Laboratorio 2: Estructura de Inodo UNIX y Acceso por Desplazamiento</h2>
+                <span class="badge badge-success">Arquitectura UFS / ext2</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
+                El diseño de <strong>nodo-i (inodo)</strong> de UNIX combina 10 bloques directos, 1 simple indirecto, 1 doble indirecto y 1 triple indirecto. Introduce un desplazamiento o número de bloque lógico para observar qué nivel de indirección interviene y cuántos accesos a disco físico son requeridos.
+            </p>
+
+            <div class="p-2 mb-4 bg-blue-50/70 dark:bg-slate-900/60 rounded border border-blue-200 dark:border-blue-800 text-[11px] text-blue-800 dark:text-blue-300">
+                <strong>Condición teórica asumida:</strong> Nodo-i ya residente en memoria RAM y bloques de punteros de indirección no almacenados previamente en memoria caché.
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="input-group">
+                    <label for="inode-block-size" class="text-xs font-bold">Tamaño de Bloque:</label>
+                    <select id="inode-block-size" class="text-xs py-1.5 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800 font-semibold">
+                        <option value="1024" selected>1 KiB (1024 B) — 256 punteros/bloque (Diapositivas 36-38, tabla Diapo 38)</option>
+                        <option value="2048">2 KiB (2048 B) — 512 punteros/bloque</option>
+                        <option value="4096">4 KiB (4096 B) — 1024 punteros/bloque (Linux ext)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="input-inode-block" class="text-xs font-bold">Bloque Lógico a Consultar:</label>
+                    <input type="number" id="input-inode-block" min="0" max="20000000" value="5" class="text-xs py-1.5 px-2 font-bold rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800">
+                </div>
+                <div class="flex items-end">
+                    <button id="btn-trace-inode" class="btn-primary text-xs font-bold w-full">🔍 Rastrear Acceso en Inodo</button>
+                </div>
+            </div>
+
+            <!-- Visualización Dinámica del Inodo -->
+            <div class="inode-tree mb-3">
+                <div class="flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+                    <span>Esquema Jerárquico del Nodo-i (Inodo cargado en memoria RAM):</span>
+                    <span id="inode-base-note" class="text-[11px] font-normal text-blue-600 dark:text-blue-400">Diseño base: 1 KiB / 256 punteros (Diapositivas 36-38, tabla Diapo 38)</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div id="node-direct" class="inode-node p-2 flex flex-col items-start">
+                        <span class="font-bold text-blue-600 dark:text-blue-400">10 Bloques Directos</span>
+                        <span class="text-gray-500" id="lbl-direct-range">Bloques lógicos: 0 a 9</span>
+                        <span class="text-[11px] text-gray-400" id="lbl-direct-cap">Capacidad: 10 KiB (1 acceso)</span>
+                    </div>
+                    <div id="node-indirect1" class="inode-node p-2 flex flex-col items-start">
+                        <span class="font-bold text-purple-600 dark:text-purple-400" id="lbl-indirect1-title">Simple Indirecto</span>
+                        <span class="text-gray-500" id="lbl-indirect1-range">Bloques lógicos: 10 a 265</span>
+                        <span class="text-[11px] text-gray-400" id="lbl-indirect1-cap">Capacidad: 256 KiB (2 accesos)</span>
+                    </div>
+                    <div id="node-indirect2" class="inode-node p-2 flex flex-col items-start">
+                        <span class="font-bold text-amber-600 dark:text-amber-400" id="lbl-indirect2-title">Doble Indirecto</span>
+                        <span class="text-gray-500" id="lbl-indirect2-range">Bloques: 266 a 65.801 (65K blk)</span>
+                        <span class="text-[11px] text-gray-400" id="lbl-indirect2-cap">Capacidad: 64 MiB [65M tabla Diapo 38] (3 accesos)</span>
+                    </div>
+                    <div id="node-indirect3" class="inode-node p-2 flex flex-col items-start">
+                        <span class="font-bold text-rose-600 dark:text-rose-400" id="lbl-indirect3-title">Triple Indirecto</span>
+                        <span class="text-gray-500" id="lbl-indirect3-range">Bloques: 65.802 a 16.843.017</span>
+                        <span class="text-[11px] text-gray-400" id="lbl-indirect3-cap">Capacidad: ~16 GiB (4 accesos)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de Resultados del Rastreo -->
+            <div id="inode-result-card" class="p-3 rounded-lg border border-purple-200 dark:border-purple-900 bg-purple-50/50 dark:bg-slate-800/50 text-xs space-y-1" aria-live="polite">
+                <!-- Calculado en app.js -->
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicio 4 (Directos)</strong>, <strong>Ejercicio 5 (Capacidad)</strong> y <strong>Ejercicio 6 (Accesos a disco)</strong>.</span>
+                <a href="#card-ej4_inodo_bloques_directos" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 4-6 ↓</a>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 3: ADMINISTRACIÓN DEL ESPACIO LIBRE (MAPA DE BITS) -->
+        <section class="card" id="lab3-freespace">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2>📊 Laboratorio 3: Administración de Espacio Libre (Mapa de Bits / Bitmaps)</h2>
+                <span class="badge badge-info">Diapositivas 39-42 (Fórmula en Diapositiva 40)</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">
+                Aprende a dimensionar la memoria RAM requerida para mantener el vector de bits de un volumen mediante la fórmula de cátedra:
+                <code>Bytes RAM = Tamaño Disco / (8 * Tamaño Bloque)</code>. Además, analiza la condición de uso del mapa de bits frente a listas ligadas (Diapositiva 40) e interactúa didácticamente con una palabra de 32 bits para identificar el primer bloque libre representado con 1.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                <div class="input-group">
+                    <label class="text-xs font-bold">Capacidad Total del Disco:</label>
+                    <select id="bitmap-disk-size" class="text-xs py-1.5 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800 font-semibold">
+                        <option value="4">4 GB (4 * 2^30 bytes)</option>
+                        <option value="8">8 GB (8 * 2^30 bytes)</option>
+                        <option value="16">16 GB (16 * 2^30 bytes)</option>
+                        <option value="32" selected>32 GB (32 * 2^30 bytes - Caso Ejercicio 7)</option>
+                        <option value="64">64 GB (64 * 2^30 bytes)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="text-xs font-bold">Tamaño de Bloque del Sistema:</label>
+                    <select id="bitmap-block-size" class="text-xs py-1.5 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800 font-semibold">
+                        <option value="512">512 Bytes</option>
+                        <option value="1024">1 KiB (1.024 Bytes)</option>
+                        <option value="2048">2 KiB (2.048 Bytes)</option>
+                        <option value="4096" selected>4 KiB (4.096 Bytes)</option>
+                        <option value="8192">8 KiB (8.192 Bytes)</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <div class="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-slate-800 w-full text-center">
+                        <div class="text-[11px] text-gray-500 font-semibold">Memoria RAM Requerida:</div>
+                        <div id="bitmap-ram-result" class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">1.048.576 Bytes (1 MiB)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inspector Interactivo de Palabra de 32 Bits -->
+            <div class="p-3 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-gray-800 mb-3">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold">Inspector didáctico del mapa de bits: identificación del primer bloque libre representado con 1 (Convención: 0 = Ocupado, 1 = Libre):</span>
+                    <button id="btn-toggle-bits" class="text-xs px-2 py-0.5 rounded bg-blue-600 text-white font-semibold">Alternar Bits de Muestra</button>
+                </div>
+                <div id="word-bits-grid" class="bitmap-word-grid">
+                    <!-- 32 bits generados por JS -->
+                </div>
+                <div id="word-status-desc" class="text-xs text-gray-600 dark:text-gray-300 mt-2 font-mono">
+                    <!-- Estado de la palabra -->
+                </div>
+            </div>
+
+            <!-- Tarjeta Comparativa: Mapa de Bits vs Lista Ligada de Bloques de Disco (Diapositivas 39-42) -->
+            <div class="p-3 bg-blue-50/50 dark:bg-slate-800/50 rounded-lg border border-blue-200 dark:border-blue-900 mb-3 text-xs space-y-1.5">
+                <div class="font-bold text-blue-700 dark:text-blue-300">📌 Comparativa Oficial: Mapa de Bits (Diapos 40-41) vs. Lista Ligada de Bloques de Disco (Diapo 42):</div>
+                <p>• <strong>Mapa de Bits (Diapositiva 40):</strong> Un disco con <em>n</em> bloques necesita un mapa de <em>n</em> bits (libres = "1", asignados = "0" o viceversa). Generalmente es preferible <strong>cuando existe espacio suficiente en la memoria principal para contener completo el mapa de bits</strong>.</p>
+                <p>• <strong>Lista Ligada de Bloques de Disco (Diapositiva 42):</strong> <strong>Los bloques libres se utilizan para contener a la lista de bloques libres</strong>, y <strong>cada bloque contiene tantos números de bloques libres como pueda</strong>. De este modo, aprovecha el propio espacio libre del disco y requiere mucha menos memoria principal que mantener un mapa de bits completo.</p>
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicio 7 (Cálculo de RAM)</strong>, <strong>Ejercicio 8 (Condición de uso del mapa de bits)</strong> y <strong>Ejercicio 9 (Lista ligada)</strong>.</span>
+                <a href="#card-ej7_mapa_bits_memoria" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 7-9 ↓</a>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 4: VERIFICADOR DE CONSISTENCIA (fsck SIMULATOR) -->
+        <section class="card" id="lab4-fsck">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2><span aria-hidden="true">🩺</span> Laboratorio 4: Verificador de Consistencia de Disco (fsck / chkdsk Simulator)</h2>
+                <span class="badge badge-warning" id="badge-fsck-status">Estado: Selecciona Escenario</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">
+                El sistema operativo utiliza herramientas de auditoría de consistencia para detectar fallos causados por apagados abruptos o pérdidas de sincronización entre inodos y el mapa de bloques libres (Diapositiva 44).
+            </p>
+
+            <div class="simulator-controls mb-4">
+                <div class="flex items-center gap-2">
+                    <label for="select-fsck-scenario" class="text-xs font-bold">Escenario Teórico:</label>
+                    <select id="select-fsck-scenario" class="text-xs py-1.5 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-slate-800 font-semibold">
+                        <option value="consistent">a) Estado Consistente (Normal)</option>
+                        <option value="lost_block">b) Bloque Perdido / Huérfano (No asignado ni libre)</option>
+                        <option value="duplicate_free">c) Bloque Duplicado en la Lista Libre</option>
+                        <option value="duplicate_data">d) Bloque de Datos Duplicado (2 archivos al mismo bloque)</option>
+                        <option value="bad_block">e) Bloque Defectuoso (Bad Block - Hardware vs Software)</option>
+                    </select>
+                </div>
+                <button id="btn-run-fsck" class="btn-primary text-xs font-bold">🔍 Ejecutar Auditoría de Consistencia</button>
+                <button id="btn-repair-fsck" class="btn-secondary text-xs font-bold">🛠️ Solución en Software (Archivo de Bloques Defectuosos / Reparación)</button>
+                <button id="btn-repair-hardware" class="btn-secondary text-xs font-bold">⚙️ Solución en Hardware (Bloque de Reserva — Diapo 46)</button>
+            </div>
+
+            <!-- Tabla de Consistencia -->
+            <div class="overflow-x-auto mb-3">
+                <table class="fsck-table">
+                    <thead>
+                        <tr>
+                            <th>Estructura / Bloque</th>
+                            <th>Bloque 0</th>
+                            <th>Bloque 1</th>
+                            <th>Bloque 2</th>
+                            <th>Bloque 3</th>
+                            <th>Bloque 4</th>
+                            <th>Bloque 5</th>
+                            <th>Bloque 6</th>
+                            <th>Bloque 7</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fsck-table-body">
+                        <!-- Generado por JS (Filas: Uso en Archivos, Uso en Lista Libre, Lista de Bloques Defectuosos) -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Panel de Diagnóstico -->
+            <div id="fsck-diagnosis-card" class="p-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-slate-800/50 text-xs space-y-1" aria-live="polite">
+                <!-- Detalle y recomendación -->
+            </div>
+
+            <!-- Microactividad Didáctica 2: Estrategias de Respaldo -->
+            <div class="mt-4 p-3 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-lg border border-indigo-300 dark:border-indigo-800 space-y-2">
+                <span class="font-bold text-indigo-900 dark:text-indigo-200 block text-xs">🧪 Microactividad Didáctica: Estrategias de Respaldo (Diapositiva 48)</span>
+                <p class="text-[11px] text-gray-700 dark:text-gray-300">Identifica si el escenario presentado corresponde a un Respaldo Completo o a un Respaldo Incremental:</p>
+                <div class="p-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-700 rounded text-xs text-gray-800 dark:text-gray-200 font-semibold" id="micro-backup-text">
+                    Copiar todos los archivos del sistema de archivos a un medio secundario de almacenamiento para tener una copia base integral de recuperación ante desastres.
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-backup-full" class="px-2.5 py-1 text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded">Respaldo Completo</button>
+                    <button type="button" id="btn-backup-incr" class="px-2.5 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded">Respaldo Incremental</button>
+                    <button type="button" id="btn-backup-next" class="px-2.5 py-1 text-[11px] font-semibold bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-gray-200 rounded">Siguiente ↻</button>
+                </div>
+                <div id="micro-backup-feedback" class="hidden text-xs" aria-live="polite"></div>
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicio 10 (Bloque Perdido)</strong>, <strong>Ejercicio 11 (Bloque Duplicado)</strong> y <strong>Ejercicio 15 (Bloques Defectuosos)</strong>.</span>
+                <a href="#card-ej10_consistencia_bloque_perdido" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 10, 11 y 15 ↓</a>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 5: PERMISOS Y CUOTAS DE DISCO -->
+        <section class="card" id="lab5-perm-quotas">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2>🛡️ Laboratorio 5: Protección de Archivos (Dueño, Grupo y Otros) y Control de Cuotas de Disco</h2>
+                <span class="badge badge-info">Protección y Gestión de Recursos</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">
+                Comprueba el modelo de control de acceso por clases de usuario (dueño, grupo y otros — Diapositiva 10) y simula el control de cuotas de almacenamiento garantizado por el sistema operativo (Diapositiva 43). El conversor octal/chmod se mantiene como ampliación didáctica complementaria.
+            </p>
+
+            <!-- Matriz de Permisos UNIX -->
+            <div class="mb-5">
+                <div class="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">1. Matriz Interactiva de Permisos de Acceso (Dueño, Grupo y Otros — Diapositiva 10):</div>
+                <div class="perm-matrix">
+                    <div class="perm-col">
+                        <div class="font-bold text-xs text-blue-600 dark:text-blue-400 mb-2">👤 Dueño / Propietario (u)</div>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-u-r" checked> Lectura (r)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-u-w" checked> Escritura (w)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-u-x" checked> Ejecución (x)</label>
+                        <div class="text-xs font-bold mt-2 text-gray-500">Valor Octal: <span id="octal-u" class="text-blue-600">7</span></div>
+                    </div>
+                    <div class="perm-col">
+                        <div class="font-bold text-xs text-purple-600 dark:text-purple-400 mb-2">👥 Grupo de Usuarios (g)</div>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-g-r" checked> Lectura (r)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-g-w"> Escritura (w)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-g-x" checked> Ejecución (x)</label>
+                        <div class="text-xs font-bold mt-2 text-gray-500">Valor Octal: <span id="octal-g" class="text-purple-600">5</span></div>
+                    </div>
+                    <div class="perm-col">
+                        <div class="font-bold text-xs text-emerald-600 dark:text-emerald-400 mb-2">🌐 Otros Usuarios (o)</div>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-o-r" checked> Lectura (r)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-o-w"> Escritura (w)</label>
+                        <label class="perm-checkbox-row"><input type="checkbox" id="perm-o-x"> Ejecución (x)</label>
+                        <div class="text-xs font-bold mt-2 text-gray-500">Valor Octal: <span id="octal-o" class="text-emerald-600">4</span></div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-3 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-wrap justify-between items-center text-xs">
+                    <div>
+                        <strong>Cadena Simbólica:</strong> <code id="perm-symbolic" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded font-mono font-bold">-rwxr-xr--</code>
+                    </div>
+                    <div>
+                        <strong>Notación Octal (Ampliación):</strong> <code id="perm-octal-code" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200 rounded font-mono font-bold">754</code>
+                    </div>
+                    <div>
+                        <strong>Comando Shell (Ampliación):</strong> <code id="perm-chmod-cmd" class="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono font-bold">chmod 754 archivo</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulador de Cuotas de Disco -->
+            <div class="mb-5">
+                <div class="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">2. Control de Cuotas de Disco en Sistemas Multiusuario (Diapositiva 43):</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div class="input-group">
+                        <label for="slider-quota-max" class="text-xs font-semibold">Cuota Máxima Asignada por Administrador: <span id="lbl-quota-max" class="font-bold text-blue-600">100 MiB</span></label>
+                        <input type="range" id="slider-quota-max" min="20" max="200" step="5" value="100" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="slider-usage" class="text-xs font-semibold">Consumo Actual del Usuario: <span id="lbl-usage" class="font-bold text-purple-600">60 MiB</span></label>
+                        <input type="range" id="slider-usage" min="0" max="220" step="5" value="60" class="w-full">
+                    </div>
+                </div>
+
+                <div id="quota-status-card" class="p-3 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-slate-800/50 text-xs space-y-1" aria-live="polite">
+                    <!-- Estado de cuota dinámico -->
+                </div>
+            </div>
+
+            <!-- 3. Operación de Apertura y Tabla en Memoria Principal -->
+            <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
+                <div class="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">3. Operación de Apertura de Archivos y Tabla en Memoria Principal (Diapositiva 8):</div>
+                <div class="p-3 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-gray-800 text-xs space-y-2">
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        Cuando un proceso ejecuta la operación <strong>open()</strong> sobre un archivo existente, el sistema operativo busca en la estructura de directorios el nombre del archivo, extrae sus atributos y las direcciones de sus bloques en disco, y guarda toda esta información en una <strong>tabla en memoria principal</strong>. Las referencias subsecuentes al archivo utilizarán directamente dicha tabla en RAM, evitando consultar reiteradamente el almacenamiento secundario.
+                    </p>
+                    <div class="p-2 rounded bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-900 text-[11px] text-gray-600 dark:text-gray-300">
+                        💡 <strong>Ampliación bibliográfica opcional:</strong> En sistemas operativos como UNIX, esta gestión se implementa mediante una tabla de descriptores por proceso vinculada a una tabla de descripciones de archivos abiertos del sistema que mantiene el puntero de posición (<em>offset</em>) y el contador de referencias.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicio 12 (Cuotas)</strong>, <strong>Ejercicio 13 (Protección por Clases)</strong> y <strong>Ejercicio 14 (Apertura y Tabla en Memoria)</strong>.</span>
+                <a href="#card-ej12_cuotas_disco_finalidad" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 12-14 ↓</a>
+            </div>
+        </section>
+
+        <!-- LABORATORIO 6: PLANIFICACIÓN DE DISCO Y TÉCNICAS DE E/S (UNIDAD 9) -->
+        <section class="card" id="lab6-io-disks">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h2><span aria-hidden="true">💽</span> Laboratorio 6: Planificación de Cabeza de Disco y Técnicas de Comunicación de E/S (Unidad 9)</h2>
+                <span class="badge badge-info" id="badge-disk-algo">Algoritmo: FCFS</span>
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                Simula los algoritmos de planificación de cabeza de disco para optimizar el tiempo de búsqueda (<em>seek time</em>), analiza las técnicas de comunicación de E/S (Polling, Interrupciones, DMA) y calcula el tiempo de transferencia de disco según los modelos analíticos de cátedra.
+            </p>
+
+            <!-- 1. Simulador de Planificación de Cabeza de Disco -->
+            <div class="mb-5 p-3 rounded-lg border border-blue-200 dark:border-blue-900 bg-white/70 dark:bg-slate-900/60">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <span class="text-xs font-bold text-blue-700 dark:text-blue-300">1. Simulador de Políticas de Búsqueda de Disco (Diapositivas 70-80):</span>
+                    <span class="text-[11px] text-gray-500 font-mono">Disco de 200 pistas (0 a 199) | Caso Oficial Cátedra</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 text-xs">
+                    <div>
+                        <label for="disk-requests-input" class="font-semibold block mb-1">Cola de Peticiones (Cilindros):</label>
+                        <input type="text" id="disk-requests-input" value="55, 58, 39, 18, 90, 160, 150, 38, 184" class="w-full text-xs font-mono py-1 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800">
+                    </div>
+                    <div>
+                        <label for="disk-head-input" class="font-semibold block mb-1">Posición Inicial del Cabezal:</label>
+                        <input type="number" id="disk-head-input" value="100" min="0" max="199" class="w-full text-xs font-mono py-1 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800">
+                    </div>
+                    <div>
+                        <label for="disk-algo-select" class="font-semibold block mb-1">Estrategia de Planificación:</label>
+                        <select id="disk-algo-select" class="w-full text-xs py-1 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 font-semibold">
+                            <option value="fcfs">FCFS (Primero en llegar, primero en servirse)</option>
+                            <option value="sstf">SSTF (Menor tiempo de búsqueda primero)</option>
+                            <option value="scan">SCAN (Algoritmo del elevador)</option>
+                            <option value="cscan">C-SCAN (SCAN circular)</option>
+                            <option value="look">LOOK (Elevador sin ir al extremo físico)</option>
+                            <option value="clook">C-LOOK (C-SCAN sin ir al extremo físico)</option>
+                            <option value="nstep-scan">SCAN de N pasos (Subcolas de N peticiones - Diapo 74 — Didáctico N=4)</option>
+                        </select>
+                        <span class="text-[10px] text-gray-500 italic block mt-1">En esta simulación didáctica se utiliza N = 4 y se considera que las subcolas ya se encuentran formadas antes de iniciar el recorrido.</span>
+                    </div>
+                    <div>
+                        <label for="disk-dir-select" class="font-semibold block mb-1">Sentido Inicial (SCAN/LOOK):</label>
+                        <select id="disk-dir-select" class="w-full text-xs py-1 px-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 font-semibold">
+                            <option value="outwards" selected>Pistas crecientes (100 → 199 — Caso Diapo 79)</option>
+                            <option value="inwards">Pistas decrecientes (0 ← 100)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Contenedor de Alertas de Validación para Cola y Cabezal -->
+                <div id="disk-input-error" class="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-2 p-2 bg-rose-50 dark:bg-rose-950/40 rounded border border-rose-300 dark:border-rose-800 hidden" role="alert"></div>
+
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button type="button" id="btn-run-disk-sim" class="btn btn-primary text-xs py-1.5 px-3">⚡ Ejecutar Planificación</button>
+                    <button type="button" id="btn-reset-disk-sim" class="btn btn-secondary text-xs py-1.5 px-3">🔄 Restaurar Peticiones Oficiales</button>
+                </div>
+
+                <!-- Gráfico de Trayectoria del Cabezal -->
+                <div class="p-3 bg-gray-50 dark:bg-slate-950/80 rounded border border-gray-200 dark:border-gray-800 mb-3">
+                    <div class="flex justify-between items-center text-xs mb-2">
+                        <span class="font-bold text-gray-700 dark:text-gray-300">Trayectoria del Brazo y Secuencia de Servicio:</span>
+                        <span id="disk-metrics-summary" class="font-mono font-bold text-blue-600 dark:text-blue-400">Total Desplazamiento: -- cilindros</span>
+                    </div>
+                    <!-- Contenedor Visual de Trayectoria -->
+                    <div id="disk-visual-track" class="space-y-1 font-mono text-[11px] overflow-x-auto py-2">
+                        <!-- Trazado dinámico de pasos -->
+                    </div>
+                </div>
+
+                <!-- Diagnóstico y Comparativa Pedagógica de la Política -->
+                <div id="disk-algo-diagnosis" class="p-3 rounded-lg border text-xs space-y-1 bg-blue-50/50 dark:bg-slate-800/50 border-blue-200 dark:border-blue-800" aria-live="polite">
+                    <!-- Detalle teórico del algoritmo -->
+                </div>
+            </div>
+
+            <!-- 2. Técnicas de Comunicación de E/S, Capas de Software y Parámetros de Rendimiento -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Técnicas de E/S y Capas de Software -->
+                <div class="p-3 rounded-lg border border-purple-200 dark:border-purple-900 bg-purple-50/30 dark:bg-slate-900/60 text-xs space-y-2">
+                    <span class="font-bold text-purple-700 dark:text-purple-300 block">2. Técnicas de Comunicación y Capas del Software de E/S (Diapositivas 58-65):</span>
+                    <div class="space-y-1.5">
+                        <div class="p-2 rounded bg-white/80 dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                            <strong>⏳ E/S Programada (Sin interrupciones — Diapos 58 y 62):</strong> Transferencia de E/S a memoria <em>a través del procesador</em>. El proceso espera a que termine la operación y la CPU se encuentra ocupada durante todo el proceso de E/S.
+                        </div>
+                        <div class="p-2 rounded bg-white/80 dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                            <strong>⚡ E/S Dirigida por Interrupciones (Con interrupciones — Diapos 59 y 62):</strong> Transferencia de E/S a memoria <em>a través del procesador</em>. El procesador emite una orden de E/S, continúa ejecutando las instrucciones siguientes y el módulo de E/S lo interrumpe cuando completa su trabajo.
+                        </div>
+                        <div class="p-2 rounded bg-white/80 dark:bg-slate-800 border border-purple-300 dark:border-purple-700">
+                            <strong>🚀 Acceso Directo a Memoria (DMA — Diapos 60-62):</strong> Transferencia de E/S <em>directa a memoria</em> con interrupciones. Un módulo de DMA controla el intercambio entre la memoria principal y el módulo de E/S; el procesador envía la petición de un bloque de datos al módulo de DMA y se interrumpe solo cuando se ha transferido el bloque entero.
+                        </div>
+                        <div class="p-2 rounded bg-white/80 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 space-y-1">
+                            <strong>🧱 Capas del Software de E/S y Subsistema del Núcleo (Diapos 64-65):</strong>
+                            <p>• <strong>Espacio de usuario:</strong> Bibliotecas vinculadas con programas de usuario.</p>
+                            <p>• <strong>Software de SO independiente del dispositivo:</strong> Realiza tareas como el uso del buffer y el reporte de error. El subsistema del núcleo incluye: <strong>Buffering</strong> (manejar diferencias de velocidad/tamaño), <strong>Caching</strong> (copias frecuentes en memoria rápida), <strong>Spooling</strong> (cola de trabajos en dispositivos no multiplexables como impresoras) y <strong>Manejo de Errores</strong>.</p>
+                            <p>• <strong>Drivers de Dispositivos:</strong> Se encargan de los detalles de operación de los dispositivos y <strong>proporcionan interfaces uniformes para el resto del SO</strong>.</p>
+                            <p>• <strong>Manejador de interrupciones:</strong> Gestiona las interrupciones sobre el hardware.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculadora de Rendimiento y Comparador Caché vs RAM Disk -->
+                <div class="p-3 rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50/30 dark:bg-slate-900/60 text-xs space-y-2">
+                    <span class="font-bold text-emerald-700 dark:text-emerald-300 block">3. Tiempo de Transferencia y Almacenamiento en Memoria (Diapos 68, 81-82):</span>
+                    
+                    <div class="p-2.5 rounded bg-white/80 dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 space-y-1.5">
+                        <span class="font-semibold text-emerald-800 dark:text-emerald-300">Calculadora <em>T</em> = <em>b</em> / (<em>r</em> &middot; <em>N</em>):</span>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label for="input-calc-b" class="text-[10px] block font-semibold">Bytes (<em>b</em>):</label>
+                                <input type="number" id="input-calc-b" value="512000" class="w-full text-[11px] font-mono font-semibold p-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100">
+                            </div>
+                            <div>
+                                <label for="input-calc-r" class="text-[10px] block font-semibold">Rev/seg (<em>r</em>):</label>
+                                <input type="number" id="input-calc-r" value="120" class="w-full text-[11px] font-mono font-semibold p-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100" title="Ej: 7200 RPM = 120 rev/s">
+                            </div>
+                            <div>
+                                <label for="input-calc-n" class="text-[10px] block font-semibold">Bytes/pista (<em>N</em>):</label>
+                                <input type="number" id="input-calc-n" value="65536" class="w-full text-[11px] font-mono font-semibold p-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100">
+                            </div>
+                        </div>
+                        <div class="text-[11px] font-mono text-emerald-700 dark:text-emerald-300 font-bold" id="transfer-calc-result">
+                            Tiempo de Transferencia <em>T</em>: 0.0651 s (65.10 ms)
+                        </div>
+                        <p class="text-[10px] text-gray-500">Parámetros de rendimiento (Diapo 68): <em>T</em><sub>acceso</sub> = <em>T</em><sub>búsqueda</sub> + <em>T</em><sub>retardo de giro</sub> + <em>T</em><sub>transferencia</sub>.</p>
+                    </div>
+
+                    <div class="p-2 rounded bg-white/80 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 text-[11px] space-y-1">
+                        <strong>💾 Caché de Disco (Diapo 81) vs. Disco RAM (Diapo 82):</strong>
+                        <p>• <strong>Caché de Disco:</strong> Buffer en memoria principal (MP) para almacenar sectores del disco; si la petición está en caché se sirve desde allí. Consideraciones de diseño: copia o memoria compartida y estrategia de reemplazo (<strong>LRU, LFU</strong>).</p>
+                        <p>• <strong>Disco RAM (<em>RAM Disk</em>):</strong> Porción de MP que actúa como unidad física en la capa de Hardware/Dispositivo (con letra ej. <code>Z:</code> o punto de montaje). El usuario/administrador decide qué archivos guardar; es <strong>volátil, estático y de tamaño fijo reservado de antemano</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 text-xs text-gray-500 flex items-center justify-between">
+                <span>Ejercitaciones vinculadas: <strong>Ejercicios 16 a 20 (E/S, Planificación de Disco, Rendimiento y Memoria)</strong>.</span>
+                <a href="#card-ej16_tecnicas_comunicacion_io" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Ir a Ejercicios 16-20 ↓</a>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE AUTOEVALUACIÓN: 20 EJERCICIOS CONCEPTUALES Y DE CÁLCULO -->
+        <section class="space-y-4" id="evaluacion-section">
+            <div class="card bg-gradient-to-r from-blue-900/10 to-purple-900/10 border-blue-300 dark:border-blue-800">
+                <h2>📝 Banco de Autoevaluación Integral (20 Ejercicios — 100 Puntos)</h2>
+                <p class="text-xs text-gray-600 dark:text-gray-300">
+                    Selecciona la opción correcta para cada consigna. Apóyate en las simulaciones interactivas, tus cálculos y la bibliografía oficial de cátedra. Al responder todas las preguntas, presiona <strong>"Exportar respuestas_tp8.json"</strong> para verificar tu nota con el autograder automatizado.
+                </p>
+            </div>
+
+            <!-- CONTENEDOR DE CARDS DE EJERCICIOS (Se inyectan o renderizan con IDs oficiales) -->
+            <div id="questions-list" class="space-y-4">
+                <!-- Generado o conectado directamente con sus IDs en app.js y estructurado de forma estática accesible -->
+            </div>
+        </section>
+
+        <!-- PANEL DE EXPORTACIÓN Y AUTOGRADER -->
+        <section class="card" id="export-panel">
+            <h2>📥 Exportación y Entrega del Trabajo Práctico</h2>
+            <p class="text-xs text-gray-600 dark:text-gray-300">
+                Verifica que todas las preguntas hayan sido respondidas y tus datos personales estén completos. Descarga el archivo JSON y colócalo en la raíz del repositorio local para validarlo con el script oficial.
+            </p>
+            <div class="flex flex-wrap items-center gap-3 mt-4">
+                <button id="btn-export" class="btn-primary text-sm font-bold">📥 Exportar respuestas_tp8.json</button>
+                <label class="btn-secondary text-sm font-bold cursor-pointer">
+                    📤 Cargar Respuestas Guardadas
+                    <input type="file" id="file-import" accept=".json" class="hidden">
+                </label>
+                <button id="btn-reset-answers" class="btn-secondary text-sm font-bold text-rose-600 dark:text-rose-400">🔄 Reiniciar Todo</button>
+            </div>
+            <div id="export-feedback" class="mt-3 text-xs font-semibold text-gray-600 dark:text-gray-300" aria-live="polite"></div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <p><strong>Universidad Nacional de Jujuy — Facultad de Ingeniería</strong></p>
+        <p>Teoría de Sistemas Operativos (TSO) — Ciclo Lectivo 2026</p>
+        <p class="text-xs text-gray-400 mt-1">Cátedra: Ing. María Fernanda Vázquez (Prof. Titular) | Ing. Fabio D. Argañaraz (JTP)</p>
+    </footer>
+
+    <!-- Script de reactividad, simuladores y autoevaluación -->
+    <script src="app.js"></script>
+</body>
+</html>
+

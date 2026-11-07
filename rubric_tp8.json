@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "tp": "TSO-2026-TP8",
+    "catedra": "Teoría de Sistemas Operativos - UNJu FI",
+    "docentes": "Ing. María Fernanda Vázquez | Ing. Fabio D. Argañaraz",
+    "descripcion": "Rúbrica Oficial de Autoevaluación Criptográfica - TP8 (Sistemas de Archivos y Entrada/Salida - Unidades 8 y 9 - 100% Teoría Oficial)",
+    "version": "3.0-unidades-8-9-oficial"
+  },
+  "max_score": 100,
+  "passing_score": 60,
+  "exercises": {
+    "ej1_asignacion_contigua": {
+      "weight": 5,
+      "hash": "ab9c6c34100c16e38376e554906729feb5e11f8a0e60c1cbfa867d7dabf7bcbf",
+      "feedback": "Revisar Asignación Contigua (Diapositivas 27 y 28 | Silberschatz Cap. 11.4)."
+    },
+    "ej2_asignacion_enlazada": {
+      "weight": 5,
+      "hash": "6eb4f9c00e46936b24404277467c5032c63ebefbd6886b3dce49bd275ac18be1",
+      "feedback": "Revisar Asignación Enlazada pura (Diapositivas 29 a 32 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej3_tabla_fat": {
+      "weight": 5,
+      "hash": "5028d17937526d87c338ff9e54bbc7e078a484967ff5d268b12001d4a075e580",
+      "feedback": "Revisar Tabla de Asignación de Archivos FAT en memoria (Diapositiva 33 | Silberschatz Cap. 11.4)."
+    },
+    "ej4_inodo_bloques_directos": {
+      "weight": 5,
+      "hash": "ce68297a5d6d1316de8503b6a87db67db38b7c39f8a297fae775bd672e009aeb",
+      "feedback": "Revisar Nodos-i bloques directos (Diapositivas 36 a 38 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej5_capacidad_inodo_calculo": {
+      "weight": 5,
+      "hash": "b2ac2d06c2a896c8891f9a0a40a7a3743cd14c01e24c095cc832d11c658f31d9",
+      "feedback": "Revisar Nivel Doble Indirecto en Inodo (Diapositivas 36 a 38 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej6_accesos_disco_inodo": {
+      "weight": 5,
+      "hash": "d03ce6e4761f6301e717116bd71856a3e172a37ad12ac6180cd9e75cb79ac9e5",
+      "feedback": "Revisar Accesos Físicos por Nivel de Indirección (Diapositivas 36 a 38 | Silberschatz Cap. 11.4)."
+    },
+    "ej7_mapa_bits_memoria": {
+      "weight": 5,
+      "hash": "867e785178fcd282a04c9f5bdf28a3c0071bef4a97050e81fc47c8816e2c9d62",
+      "feedback": "Revisar Fórmula de RAM para Mapa de Bits (Diapositiva 40 | Silberschatz Cap. 11.5)."
+    },
+    "ej8_mapa_bits_condicion_uso": {
+      "weight": 5,
+      "hash": "d6c38bf74255b387cf7fa0cf6b2bad6419950cc9086782bc856f6dcdd84e29c8",
+      "feedback": "Revisar Condición de Uso del Mapa de Bits en RAM (Diapositiva 40 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej9_lista_ligada_espacio_libre": {
+      "weight": 5,
+      "hash": "7ed0f9d5cb87908c1f5dbf9f3e8c5dd77f6755fb5169627c419255075b9836aa",
+      "feedback": "Revisar Lista Ligada de Espacio Libre (Diapositiva 42 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej10_consistencia_bloque_perdido": {
+      "weight": 5,
+      "hash": "2469582f342fa95ccb872e2c4a92086c61d2f84dcb42cd1541935166372e8aaf",
+      "feedback": "Revisar Diagnóstico de Bloque Perdido / Huérfano (Diapositiva 44 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej11_consistencia_bloque_duplicado": {
+      "weight": 5,
+      "hash": "762b9fd93af3c6e99ebbb17d8167924f390331c4f7691a8cb7b74a4f63c5ab25",
+      "feedback": "Revisar Diagnóstico y Riesgo de Bloque Duplicado (Diapositiva 44 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej12_cuotas_disco_finalidad": {
+      "weight": 5,
+      "hash": "8cb7693a194d433407b038b16aabe4b7e69618715db0774d942dc8055696be83",
+      "feedback": "Revisar Finalidad de Cuotas de Disco en Multiusuario (Diapositiva 43 | Tanenbaum & Bos Cap. 4.4)."
+    },
+    "ej13_proteccion_clases_usuario": {
+      "weight": 5,
+      "hash": "1946f0a818efcb3e1029b96d03b6d6f4a13ca92d83f245bc772ec356820f5165",
+      "feedback": "Revisar Protección de Archivos: Dueño, Grupo y Otros (Diapositiva 10 | Silberschatz Cap. 10.6)."
+    },
+    "ej14_apertura_archivo_tabla_memoria": {
+      "weight": 5,
+      "hash": "a9b7dce647bb17616390f80b205cbed489761fcb749135318fe2a063f947bf99",
+      "feedback": "Revisar Operación de Apertura y Tabla en Memoria Principal (Diapositiva 8 | Silberschatz Cap. 10.2)."
+    },
+    "ej15_bloques_defectuosos_recuperacion": {
+      "weight": 5,
+      "hash": "632b3f9a6d714d7e3b03651ca234eba1aec08db3803bf146f6535f381f53f2e4",
+      "feedback": "Revisar Bloques Defectuosos: Reserva Hardware vs Lista Software (Diapositivas 46 y 47 | Silberschatz Cap. 12.5)."
+    },
+    "ej16_tecnicas_comunicacion_io": {
+      "weight": 5,
+      "hash": "ee754ecebae464089ffcbd1997eed8bc9e6117ec2415051f71aaab90e2c1fed0",
+      "feedback": "Revisar Técnicas de Comunicación de E/S: Polling vs Interrupciones vs DMA (Diapositivas 58 a 62 | Silberschatz Cap. 12.2)."
+    },
+    "ej17_capas_software_io_buffering": {
+      "weight": 5,
+      "hash": "353d407ca3632a5a896aa1de55bd40d4573c281e08b9a3417fa3063c1f82facc",
+      "feedback": "Revisar Capas del Software de E/S y Subsistema del Núcleo (Diapositivas 64 y 65 | Tanenbaum Cap. 5.2)."
+    },
+    "ej18_parametros_rendimiento_disco": {
+      "weight": 5,
+      "hash": "98bd16a355befebac04023d150dafb06c2b91c9c39ee78822fffc4fad53ef8c1",
+      "feedback": "Revisar Parámetros de Rendimiento y Tiempo T = b / (r * N) (Diapositiva 68 | Silberschatz Cap. 11.1)."
+    },
+    "ej19_planificacion_disco_algoritmos": {
+      "weight": 5,
+      "hash": "bd0b3d7f86597fc55d2be7eea0f7bde24b793eeea7912101916ccdc158ca12b0",
+      "feedback": "Revisar Políticas de Planificación: SSTF vs C-SCAN (Diapositivas 70 a 80 | Silberschatz Cap. 11.2)."
+    },
+    "ej20_planificacion_disco_n_pasos": {
+      "weight": 5,
+      "hash": "c058cfb87a21a78d0635b4b3d6a7e952c14052ed3014960012f6758d911363ab",
+      "feedback": "Revisar Algoritmo SCAN de N Pasos (Diapositiva 74 | Silberschatz Cap. 11.2)."
+    }
+  }
+}
