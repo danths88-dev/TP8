@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "tp": "TSO-2026-TP8",
+    "catedra": "Teoría de Sistemas Operativos - UNJu FI",
+    "docentes": "Ing. María Fernanda Vázquez | Ing. Fabio D. Argañaraz",
+    "fecha_exportacion": "2026-11-07T16:01:34.555Z",
+    "alumno": {
+      "nombre": "Mamani Dante Ezequiel",
+      "legajo": "PUI000079--LIE000135",
+      "email": "danths88@gmail.com"
+    }
+  },
+  "ej1_asignacion_contigua": "maxima_velocidad_fragmentacion_externa",
+  "ej2_asignacion_enlazada": "costo_k_lecturas_vulnerabilidad_cadena",
+  "ej3_tabla_fat": "punteros_centralizados_tabla_ram",
+  "ej4_inodo_bloques_directos": "en_el_propio_inodo_un_acceso",
+  "ej5_capacidad_inodo_calculo": "65536_bloques_64mib",
+  "ej6_accesos_disco_inodo": "3_lecturas_doble_indirecto",
+  "ej7_mapa_bits_memoria": "1048576_bytes_1mib",
+  "ej8_mapa_bits_condicion_uso": "suficiente_memoria_ram_mapa_completo",
+  "ej9_lista_ligada_espacio_libre": "aprovecha_propios_bloques_recorrido_lento",
+  "ej10_consistencia_bloque_perdido": "bloque_perdido_agrega_a_lista_libre",
+  "ej11_consistencia_bloque_duplicado": "corrupcion_cruzada_soluciona_clonando_bloque",
+  "ej12_cuotas_disco_finalidad": "evitar_acaparamiento_maximo_archivos_bloques",
+  "ej13_proteccion_clases_usuario": "clases_independientes_dueno_grupo_otros",
+  "ej14_apertura_archivo_tabla_memoria": "busca_nombre_extrae_atributos_tabla_memoria",
+  "ej15_bloques_defectuosos_recuperacion": "hardware_bloque_reserva_software_lista_defectuosos",
+  "ej16_tecnicas_comunicacion_io": "dma_transferencia_bloques_interrupcion_final",
+  "ej17_capas_software_io_buffering": "capa_independiente_buffering_caching_drivers_especificos",
+  "ej18_parametros_rendimiento_disco": "busqueda_brazo_latencia_giro_transferencia_formula",
+  "ej19_planificacion_disco_algoritmos": "sstf_inanicion_extremos_cscan_recorrido_unidireccional_baja_varianza",
+  "ej20_planificacion_disco_n_pasos": "subcolas_n_scan_n_grande_scan_n_1_fifo"
+}
